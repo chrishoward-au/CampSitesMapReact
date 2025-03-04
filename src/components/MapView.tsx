@@ -8,17 +8,7 @@ import { useMapContext } from '../contexts/MapContext';
 import type { MapPoint, MapViewState } from '../types';
 import type { MapRef } from 'react-map-gl/mapbox';
 import { AddMapPointForm } from './AddMapPointForm';
-
-// Map style options
-const MAP_STYLES = {
-  outdoors: 'mapbox://styles/mapbox/outdoors-v12',
-  satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
-  streets: 'mapbox://styles/mapbox/streets-v12',
-  light: 'mapbox://styles/mapbox/light-v11',
-  dark: 'mapbox://styles/mapbox/dark-v11'
-};
-
-const DEFAULT_STYLE = MAP_STYLES.outdoors;
+import { MAP_STYLES, DEFAULT_STYLE, CONTROL_POSITIONS, MAP_CONFIG, POINT_TYPE_COLORS } from '../constants';
 
 export const MapView = () => {
   const {
@@ -154,23 +144,20 @@ export const MapView = () => {
         onClick={handleMapClick}
         mapStyle={currentMapStyle}
         reuseMaps
-        maxZoom={18}
-        minZoom={3}
-        maxPitch={85}
-        projection={{name: 'mercator'}}
+        {...MAP_CONFIG}
       >
         {/* Map Controls */}
-        <NavigationControl position="top-right" showCompass={true} showZoom={true} visualizePitch={true} />
-        <GeolocateControl position="top-right" positionOptions={{enableHighAccuracy: true}} trackUserLocation={true} />
-        <FullscreenControl position="top-right" />
-        <ScaleControl position="bottom-left" unit="metric" />
+        <NavigationControl position={CONTROL_POSITIONS.topRight} showCompass={true} showZoom={true} visualizePitch={true} />
+        <GeolocateControl position={CONTROL_POSITIONS.topRight} positionOptions={{enableHighAccuracy: true}} trackUserLocation={true} />
+        <FullscreenControl position={CONTROL_POSITIONS.topRight} />
+        <ScaleControl position={CONTROL_POSITIONS.bottomLeft} unit="metric" />
         
         {mapPoints.map(point => (
           <Marker
             key={point.id}
             longitude={point.longitude}
             latitude={point.latitude}
-            color={point.type === 'Campsite' ? '#FF5733' : point.type === 'Hiking Trail' ? '#33FF57' : '#3357FF'}
+            color={point.type === 'Campsite' ? POINT_TYPE_COLORS.Campsite : point.type === 'Hiking Trail' ? POINT_TYPE_COLORS.HikingTrail : POINT_TYPE_COLORS.Default}
             scale={selectedPoint?.id === point.id ? 1.2 : 0.8}
             pitchAlignment="map"
             onClick={e => {
