@@ -3,6 +3,7 @@ import "mapbox-gl-style-switcher/styles.css";
 import { useMap } from 'react-map-gl/mapbox';
 import { useEffect } from 'react';
 import type { ControlPosition } from 'react-map-gl/mapbox';
+import { MAP_STYLES, DEFAULT_STYLE } from '../constants';
 
 interface LayerSwitcherProps {
   position?: ControlPosition;
@@ -22,7 +23,16 @@ export const LayerSwitcher = ({ position = 'bottom-right' as ControlPosition }: 
       );
       
       if (!existingControl) {
-        const styleSwitcher = new MapboxStyleSwitcherControl();
+        // Format the styles for the style switcher
+        const styles = [
+          { title: "Outdoors", uri: MAP_STYLES.outdoors },
+          { title: "Satellite", uri: MAP_STYLES.satellite },
+          { title: "Streets", uri: MAP_STYLES.streets },
+          { title: "Light", uri: MAP_STYLES.light },
+          { title: "Dark", uri: MAP_STYLES.dark }
+        ];
+        
+        const styleSwitcher = new MapboxStyleSwitcherControl(styles, DEFAULT_STYLE);
         map.addControl(styleSwitcher, position);
         
         // For cleanup when component unmounts
