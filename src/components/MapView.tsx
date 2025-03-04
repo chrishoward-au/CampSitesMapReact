@@ -16,7 +16,7 @@ export const MapView = () => {
   return (
     <div id="map-container">
       <Map
-        mapboxAccessToken="pk.eyJ1IjoiY2hyaXNob3dhcmRhdSIsImEiOiJjbTczNW9kM3AwaGNlMmtvN2lwdTV4ZTI4In0.RxxbQz6ZNpNCeEeaC0rDqA"
+        mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapStyle={DEFAULT_STYLE}
