@@ -1,18 +1,18 @@
-import { Routes, Route } from 'react-router-dom';
 import { Map } from './components/Map';
 import { usePreline } from './utils/preline';
+import './App.css';
 
 function App() {
   usePreline();
   
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Camp Sites Map</h1>
+    <div className="h-screen w-screen flex flex-col">
+      <header className="bg-white shadow z-10">
+        <div className="w-full py-2 px-4">
+          <h1 className="text-xl font-bold text-gray-900">Camp Sites Map</h1>
         </div>
       </header>
-      <main>
+      <main className="flex-1 relative">
         <Map />
       </main>
     </div>
