@@ -1,6 +1,6 @@
 
 import Map, { Marker, Popup, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl } from 'react-map-gl/mapbox';
-import type { MapLayerMouseEvent } from 'react-map-gl';
+import type { MapMouseEvent } from 'mapbox-gl';
 import * as React from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -50,7 +50,7 @@ export const MapView = () => {
   }, [selectedPoint, setViewState]);
   
   // Handle map click events
-  const handleMapClick = (event: MapLayerMouseEvent) => {
+  const handleMapClick = (event: MapMouseEvent) => {
     // Only trigger on cmd/ctrl + click
     if (event.originalEvent.metaKey || event.originalEvent.ctrlKey) {
       setClickedLocation({
