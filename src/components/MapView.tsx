@@ -1,11 +1,22 @@
-import Map, { Marker, Popup, NavigationControl, MapLayerMouseEvent } from 'react-map-gl/mapbox';
+import Map, { Marker, Popup, NavigationControl, MapLayerMouseEvent, GeolocateControl, FullscreenControl, ScaleControl } from 'react-map-gl/mapbox';
 import * as React from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapContext } from '../contexts/MapContext';
 import type { MapPoint, MapViewState } from '../types';
+import type { MapRef } from 'react-map-gl/mapbox';
 import { AddMapPointForm } from './AddMapPointForm';
 
-const DEFAULT_STYLE = 'mapbox://styles/mapbox/outdoors-v12';
+// Map style options
+const MAP_STYLES = {
+  outdoors: 'mapbox://styles/mapbox/outdoors-v12',
+  satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+  streets: 'mapbox://styles/mapbox/streets-v12',
+  light: 'mapbox://styles/mapbox/light-v11',
+  dark: 'mapbox://styles/mapbox/dark-v11'
+};
+
+const DEFAULT_STYLE = MAP_STYLES.outdoors;
 
 export const MapView = () => {
   const {
@@ -17,10 +28,12 @@ export const MapView = () => {
     setSelectedPoint
   } = useMapContext();
   
-  const [popupInfo, setPopupInfo] = React.useState<MapPoint | null>(null);
-  const [showAddForm, setShowAddForm] = React.useState(false);
-  const [clickedLocation, setClickedLocation] = React.useState<{latitude: number, longitude: number} | null>(null);
-  const popoverButtonRef = React.useRef<HTMLButtonElement>(null);
+  const mapRef = useRef<MapRef>(null);
+  const [popupInfo, setPopupInfo] = useState<MapPoint | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [clickedLocation, setClickedLocation] = useState<{latitude: number, longitude: number} | null>(null);
+  const [currentMapStyle, setCurrentMapStyle] = useState<string>(DEFAULT_STYLE);
+  const popoverButtonRef = useRef<HTMLButtonElement>(null);
 
   // When selectedPoint changes, update the map view to center on it
   React.useEffect(() => {
@@ -49,6 +62,23 @@ export const MapView = () => {
       }
     }
   };
+  
+  // Fly to a location with animation
+  const flyToLocation = useCallback((latitude: number, longitude: number, zoom = 14) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [longitude, latitude],
+        zoom,
+        duration: 2000,
+        essential: true
+      });
+    }
+  }, []);
+  
+  // Change map style
+  const changeMapStyle = useCallback((styleName: keyof typeof MAP_STYLES) => {
+    setCurrentMapStyle(MAP_STYLES[styleName]);
+  }, []);
 
   return (
     <div id="map-container">
@@ -57,6 +87,23 @@ export const MapView = () => {
           <span>Loading map data...</span>
         </div>
       ) : null}
+      
+      {/* Map Controls */}
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <div className="bg-white rounded shadow p-2">
+          <select 
+            className="block w-full px-2 py-1 text-sm rounded border border-gray-300"
+            value={currentMapStyle}
+            onChange={(e) => setCurrentMapStyle(e.target.value)}
+          >
+            <option value={MAP_STYLES.outdoors}>Outdoors</option>
+            <option value={MAP_STYLES.satellite}>Satellite</option>
+            <option value={MAP_STYLES.streets}>Streets</option>
+            <option value={MAP_STYLES.light}>Light</option>
+            <option value={MAP_STYLES.dark}>Dark</option>
+          </select>
+        </div>
+      </div>
       
       {/* Hidden button to trigger Preline popover */}
       <button
@@ -98,24 +145,37 @@ export const MapView = () => {
       </div>
       
       <Map
+        ref={mapRef}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         onClick={handleMapClick}
-        mapStyle={DEFAULT_STYLE}
+        mapStyle={currentMapStyle}
         reuseMaps
+        maxZoom={18}
+        minZoom={3}
+        maxPitch={85}
+        projection={{name: 'mercator'}}
       >
-        <NavigationControl position="top-right" />
+        {/* Map Controls */}
+        <NavigationControl position="top-right" showCompass={true} showZoom={true} visualizePitch={true} />
+        <GeolocateControl position="top-right" positionOptions={{enableHighAccuracy: true}} trackUserLocation={true} />
+        <FullscreenControl position="top-right" />
+        <ScaleControl position="bottom-left" unit="metric" />
         
         {mapPoints.map(point => (
           <Marker
             key={point.id}
             longitude={point.longitude}
             latitude={point.latitude}
-            color="#FF5733"
+            color={point.type === 'Campsite' ? '#FF5733' : point.type === 'Hiking Trail' ? '#33FF57' : '#3357FF'}
+            scale={selectedPoint?.id === point.id ? 1.2 : 0.8}
+            pitchAlignment="map"
             onClick={e => {
               e.originalEvent.stopPropagation();
               setPopupInfo(point);
+              // Fly to the clicked point with animation
+              flyToLocation(point.latitude, point.longitude, 15);
             }}
           />
         ))}
@@ -127,12 +187,35 @@ export const MapView = () => {
             anchor="bottom"
             onClose={() => setPopupInfo(null)}
             closeOnClick={false}
+            className="map-popup"
+            maxWidth="300px"
+            offset={15}
           >
-            <div className="popup-content">
-              <h3>{popupInfo.name}</h3>
-              {popupInfo.description && <p>{popupInfo.description}</p>}
-              <p>Type: {popupInfo.type}</p>
-              {popupInfo.rating && <p>Rating: {popupInfo.rating}/5</p>}
+            <div className="popup-content p-2">
+              <h3 className="text-lg font-bold mb-2">{popupInfo.name}</h3>
+              {popupInfo.description && <p className="text-sm mb-2">{popupInfo.description}</p>}
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                  {popupInfo.type}
+                </span>
+                {popupInfo.amenities && popupInfo.amenities.map((amenity, index) => (
+                  <span key={index} className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                    {amenity}
+                  </span>
+                ))}
+              </div>
+              {popupInfo.rating && (
+                <div className="flex items-center">
+                  <span className="text-sm font-medium mr-1">Rating:</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className={`w-4 h-4 ${i < popupInfo.rating ? 'text-yellow-400' : 'text-gray-300'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+                        <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </Popup>
         )}
