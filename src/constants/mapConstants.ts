@@ -1,6 +1,8 @@
 /**
  * Map style constants for Mapbox
  */
+import { ControlPosition } from 'react-map-gl/mapbox';
+
 export const MAP_STYLES = {
   outdoors: 'mapbox://styles/mapbox/outdoors-v12',
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -14,11 +16,11 @@ export const DEFAULT_STYLE = MAP_STYLES.outdoors;
 /**
  * Map control positions
  */
-export const CONTROL_POSITIONS = {
-  topRight: 'top-right',
-  topLeft: 'top-left',
-  bottomRight: 'bottom-right',
-  bottomLeft: 'bottom-left'
+export const CONTROL_POSITIONS: Record<string, ControlPosition> = {
+  topRight: 'top-right' as ControlPosition,
+  topLeft: 'top-left' as ControlPosition,
+  bottomRight: 'bottom-right' as ControlPosition,
+  bottomLeft: 'bottom-left' as ControlPosition
 };
 
 /**
