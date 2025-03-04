@@ -27,9 +27,7 @@ export const LayerSwitcher = ({ position = 'bottom-right' as ControlPosition }: 
         const styles = [
           { title: "Outdoors", uri: MAP_STYLES.outdoors },
           { title: "Satellite", uri: MAP_STYLES.satellite },
-          { title: "Streets", uri: MAP_STYLES.streets },
-          { title: "Light", uri: MAP_STYLES.light },
-          { title: "Dark", uri: MAP_STYLES.dark }
+          { title: "Streets", uri: MAP_STYLES.streets }
         ];
         
         const styleSwitcher = new MapboxStyleSwitcherControl(styles, DEFAULT_STYLE);

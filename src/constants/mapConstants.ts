@@ -6,9 +6,7 @@ import { ControlPosition } from 'react-map-gl/mapbox';
 export const MAP_STYLES = {
   outdoors: 'mapbox://styles/mapbox/outdoors-v12',
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
-  streets: 'mapbox://styles/mapbox/streets-v12',
-  light: 'mapbox://styles/mapbox/light-v11',
-  dark: 'mapbox://styles/mapbox/dark-v11'
+  streets: 'mapbox://styles/mapbox/streets-v12'
 };
 
 export const DEFAULT_STYLE = MAP_STYLES.outdoors;

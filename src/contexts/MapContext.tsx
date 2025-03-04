@@ -20,7 +20,7 @@ interface MapContextType {
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
 // Mock user ID - in a real app, this would come from authentication
-const MOCK_USER_ID = 'default-user';
+const MOCK_USER_ID = 'de2e543b-0581-491c-9434-7d65c00dfea9';
 
 export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mapPoints, setMapPoints] = useState<MapPoint[]>([]);
