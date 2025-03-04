@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMapContext } from '../contexts/MapContext';
 
 interface AddMapPointFormProps {
   onClose: () => void;
+  initialLocation?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-export const AddMapPointForm: React.FC<AddMapPointFormProps> = ({ onClose }) => {
+export const AddMapPointForm: React.FC<AddMapPointFormProps> = ({ onClose, initialLocation }) => {
   const { viewState, addMapPoint } = useMapContext();
   
   const [formData, setFormData] = useState({
@@ -14,9 +18,20 @@ export const AddMapPointForm: React.FC<AddMapPointFormProps> = ({ onClose }) => 
     type: 'campsite',
     amenities: '',
     rating: 0,
-    latitude: viewState.latitude,
-    longitude: viewState.longitude
+    latitude: initialLocation ? initialLocation.latitude : viewState.latitude,
+    longitude: initialLocation ? initialLocation.longitude : viewState.longitude
   });
+  
+  // Update form when initialLocation changes
+  useEffect(() => {
+    if (initialLocation) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: initialLocation.latitude,
+        longitude: initialLocation.longitude
+      }));
+    }
+  }, [initialLocation]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
