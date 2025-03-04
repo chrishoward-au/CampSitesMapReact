@@ -1,4 +1,6 @@
-import Map, { Marker, Popup, NavigationControl, MapLayerMouseEvent, GeolocateControl, FullscreenControl, ScaleControl } from 'react-map-gl/mapbox';
+
+import Map, { Marker, Popup, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl } from 'react-map-gl/mapbox';
+import type { MapLayerMouseEvent } from 'react-map-gl';
 import * as React from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
