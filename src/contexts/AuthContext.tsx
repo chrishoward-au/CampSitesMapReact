@@ -57,13 +57,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (error) {
-        throw error;
+        // Handle specific error cases
+        if (error.message.includes('Email not confirmed')) {
+          Modal.info({
+            title: 'Email Verification Required',
+            content: (
+              <div>
+                <p>Your email address has not been verified.</p>
+                <p>Please check your inbox for a verification email.</p>
+              </div>
+            ),
+          });
+        } else if (error.message.includes('Invalid login credentials')) {
+          message.error('Invalid email or password. Please try again.');
+        } else {
+          throw error;
+        }
+        return;
       }
 
       setUser(data.user);
       setIsLoginModalVisible(false);
       message.success('Successfully signed in!');
     } catch (error: any) {
+      console.error('Sign in error:', error);
       message.error(error.message || 'Failed to sign in');
       throw error;
     }
@@ -73,7 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('Attempting to sign up with:', email);
       
-      // Use autoconfirm: true to bypass email verification during development
+      // Add autoconfirm: true to bypass email verification during development
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -82,7 +99,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           data: {
             email: email,
             full_name: email.split('@')[0], // Default name from email
-          }
+          },
+          // This is critical for development - it bypasses email verification
+          emailConfirm: false
         }
       });
 
@@ -101,22 +120,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Check if the user was created successfully
       if (data.user.id) {
-        message.success('Account created successfully!');
-        
-        // If email confirmation is required, show a more detailed message
-        if (!data.user.confirmed_at) {
-          Modal.info({
-            title: 'Account Created',
-            content: (
-              <div>
-                <p>Your account has been created successfully!</p>
-                <p>You can now sign in with your credentials.</p>
-                <p><strong>Note:</strong> For development purposes, email verification has been bypassed.</p>
-              </div>
-            ),
+        // Try to automatically sign in the user after signup
+        try {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
           });
+          
+          if (signInError) {
+            console.log('Auto sign-in failed:', signInError);
+            // If auto-login fails, show a message about email verification
+            if (signInError.message.includes('Email not confirmed')) {
+              Modal.info({
+                title: 'Email Verification Required',
+                content: (
+                  <div>
+                    <p>Your account has been created, but email verification is required.</p>
+                    <p>Please check your email for a verification link.</p>
+                    <p>If you don't receive an email, check your Supabase project settings to ensure email delivery is configured correctly.</p>
+                  </div>
+                ),
+              });
+            } else if (signInError.message.includes('Invalid login credentials')) {
+              // For development, show a more helpful message
+              Modal.info({
+                title: 'Account Created',
+                content: (
+                  <div>
+                    <p>Your account has been created successfully!</p>
+                    <p>However, Supabase requires email verification before you can log in.</p>
+                    <p><strong>Development Note:</strong> To bypass this in development:</p>
+                    <ol>
+                      <li>Go to your Supabase dashboard</li>
+                      <li>Navigate to Authentication → Settings</li>
+                      <li>Disable "Enable email confirmations"</li>
+                    </ol>
+                  </div>
+                ),
+              });
+            } else {
+              message.error(signInError.message || 'Failed to sign in after registration');
+            }
+          } else if (signInData.user) {
+            // Successfully signed in
+            setUser(signInData.user);
+            setIsLoginModalVisible(false);
+            message.success('Account created and signed in successfully!');
+            return; // Exit early since we're already signed in
+          }
+        } catch (signInError) {
+          console.error('Error during auto sign-in:', signInError);
         }
         
+        message.success('Account created successfully!');
         setIsLoginView(true); // Switch back to login view
       } else {
         message.error('Failed to create user account. Please try again.');
