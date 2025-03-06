@@ -71,19 +71,65 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signUp = async (email: string, password: string) => {
     try {
+      console.log('Attempting to sign up with:', email);
+      
+      // Use autoconfirm: true to bypass email verification during development
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            email: email,
+            full_name: email.split('@')[0], // Default name from email
+          }
+        }
       });
 
+      console.log('Signup response:', data);
+
       if (error) {
+        console.error('Signup error:', error);
         throw error;
       }
 
-      message.success('Registration successful! Please check your email for verification.');
-      setIsLoginView(true); // Switch back to login view after successful signup
+      if (!data.user) {
+        console.error('No user returned from signup');
+        message.error('Failed to create user account. Please try again.');
+        return;
+      }
+
+      // Check if the user was created successfully
+      if (data.user.id) {
+        message.success('Account created successfully!');
+        
+        // If email confirmation is required, show a more detailed message
+        if (!data.user.confirmed_at) {
+          Modal.info({
+            title: 'Account Created',
+            content: (
+              <div>
+                <p>Your account has been created successfully!</p>
+                <p>You can now sign in with your credentials.</p>
+                <p><strong>Note:</strong> For development purposes, email verification has been bypassed.</p>
+              </div>
+            ),
+          });
+        }
+        
+        setIsLoginView(true); // Switch back to login view
+      } else {
+        message.error('Failed to create user account. Please try again.');
+      }
     } catch (error: any) {
-      message.error(error.message || 'Failed to sign up');
+      console.error('Signup error details:', error);
+      
+      if (error.message.includes('User already registered')) {
+        message.error('This email is already registered. Please use the login option.');
+      } else {
+        message.error(error.message || 'Failed to sign up');
+      }
+      
       throw error;
     }
   };
