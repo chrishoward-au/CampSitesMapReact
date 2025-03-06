@@ -1,5 +1,6 @@
 import { supabase } from '../utils/supabase';
 import type { UserSettings } from '../types';
+import type { Database } from '../types/supabase';
 
 // Default settings if none are found
 const DEFAULT_SETTINGS: Omit<UserSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
@@ -27,14 +28,14 @@ export const settingsService = {
   async getUserSettings(userId: string): Promise<UserSettings> {
     try {
       console.log('Fetching settings for user:', userId);
-      
-      // Check if user is authenticated
-      const { data: sessionData } = await supabase.auth.getSession();
-      const isAuthenticated = !!sessionData?.session;
+
+      // Check if user is authenticated using getUser instead of getSession
+      const { data: userData, error: authError } = await supabase.auth.getUser();
+      const isAuthenticated = !!userData?.user;
       
       // If not authenticated, immediately return fallback settings
-      if (!isAuthenticated) {
-        console.log('User not authenticated, using fallback settings');
+      if (!isAuthenticated || authError) {
+        console.log('User not authenticated, using fallback settings', { userData, authError });
         return createFallbackSettings(userId);
       }
       
@@ -65,6 +66,12 @@ export const settingsService = {
         
         // For other errors, use fallback settings
         console.warn('Error fetching settings, using fallback:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         return createFallbackSettings(userId);
       }
 
@@ -80,11 +87,11 @@ export const settingsService = {
   async createUserSettings(userId: string): Promise<UserSettings> {
     try {
       // Check if user is authenticated before attempting to create settings
-      const { data: sessionData } = await supabase.auth.getSession();
-      const isAuthenticated = !!sessionData?.session;
+      const { data: userData, error: authError } = await supabase.auth.getUser();
+      const isAuthenticated = !!userData?.user;
       
-      if (!isAuthenticated) {
-        console.warn('Cannot create settings: User not authenticated');
+      if (!isAuthenticated || authError) {
+        console.warn('Cannot create settings: User not authenticated', { userData, authError });
         return createFallbackSettings(userId);
       }
       
