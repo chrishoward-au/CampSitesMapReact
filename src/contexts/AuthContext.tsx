@@ -90,22 +90,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('Attempting to sign up with:', email);
       
-      // First check if the user already exists
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      }).catch(() => ({ data: null })); // Ignore errors here
+      // Try to create a new user directly without checking if they exist first
+      // This avoids the unnecessary 400 error in the console
       
-      // If user exists and can sign in, use that account
-      if (existingUser?.user) {
-        console.log('User already exists and credentials are valid');
-        setUser(existingUser.user);
-        setIsLoginModalVisible(false);
-        message.success('Successfully signed in with existing account!');
-        return;
-      }
-      
-      // Try to create a new user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -198,25 +185,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('Signup error details:', error);
       
       if (error.message.includes('User already registered')) {
-        message.info('This email is already registered. Trying to sign in...');
+        // Switch to login view with a helpful message
+        message.info('This email is already registered. Please sign in.');
+        setIsLoginView(true);
         
-        // Try to sign in with the provided credentials
-        try {
-          const { data, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          if (signInError) {
-            message.error('Could not sign in with provided credentials. Please reset your password if needed.');
-          } else if (data.user) {
-            setUser(data.user);
-            setIsLoginModalVisible(false);
-            message.success('Successfully signed in!');
-          }
-        } catch (signInError) {
-          message.error('Failed to sign in with existing account. Please try the login option.');
-        }
+        // Pre-fill the email field for convenience
+        form.setFieldsValue({ email });
       } else {
         message.error(error.message || 'Failed to sign up');
       }

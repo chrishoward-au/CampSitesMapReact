@@ -27,15 +27,19 @@ const createFallbackSettings = (userId: string): UserSettings => ({
 export const settingsService = {
   async getUserSettings(userId: string): Promise<UserSettings> {
     try {
+      // Check if userId is valid before making any requests
+      if (!userId || userId === 'null' || userId === 'undefined') {
+        return createFallbackSettings('guest');
+      }
+      
       console.log('Fetching settings for user:', userId);
 
-      // Check if user is authenticated using getUser instead of getSession
+      // Only check authentication if we have a valid userId
       const { data: userData, error: authError } = await supabase.auth.getUser();
       const isAuthenticated = !!userData?.user;
       
-      // If not authenticated, immediately return fallback settings
+      // If not authenticated, immediately return fallback settings without logging errors
       if (!isAuthenticated || authError) {
-        console.log('User not authenticated, using fallback settings', { userData, authError });
         return createFallbackSettings(userId);
       }
       
