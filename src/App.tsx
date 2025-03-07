@@ -61,16 +61,16 @@ const items: MenuItem[] = [
 // Wrapper component that conditionally renders content based on auth state
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const [current, setCurrent] = useState('login');
 
-  if (loading) {
-    return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
-  }
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
     setCurrent(e.key);
   };
 
-  const [current, setCurrent] = useState('login');
+  if (loading) {
+    return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <MapProvider>
