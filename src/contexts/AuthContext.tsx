@@ -9,6 +9,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   showLoginModal: () => void;
+  showSettingsModal: () => void;
   isLoginModalVisible: boolean;
 }
 
@@ -39,7 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Subscribe to auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_, session) => {
         setUser(session?.user || null);
       }
     );
@@ -211,6 +212,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoginModalVisible(true);
   };
 
+  const showSettingsModal = () => {
+    // Placeholder for settings modal functionality
+    message.info('Settings functionality coming soon!');
+  };
+
   const handleLoginCancel = () => {
     setIsLoginModalVisible(false);
     form.resetFields();
@@ -306,6 +312,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signUp,
         signOut,
         showLoginModal,
+        showSettingsModal,
         isLoginModalVisible
       }}
     >

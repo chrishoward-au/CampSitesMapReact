@@ -1,16 +1,15 @@
 import { MapView } from './components/MapView';
 import { MapProvider } from './contexts/MapContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { LoginPrompt } from './components/LoginPrompt';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
 import { Content } from 'antd/es/layout/layout';
-import { Flex, Layout, Menu } from 'antd';
+import { Flex, Layout, Menu, Spin } from 'antd';
 import type {MenuProps } from 'antd';
 import { UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 
-const { Header, Footer } = Layout;
+const { Footer } = Layout;
 
 const layoutStyle = {
   height: '100vh',
@@ -33,15 +32,7 @@ const footerStyle = {
   alignItems: 'center',
 };
 
-const showLoginModal = () => {
-  const { showLoginModal } = useAuth();
-  showLoginModal();
-};
-
-const showSettingsModal = () => {
-  const { showSettingsModal } = useAuth();
-  showSettingsModal();
-};
+// Menu click handlers moved to onClick handler in AppContent
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -60,7 +51,7 @@ const items: MenuItem[] = [
 
 // Wrapper component that conditionally renders content based on auth state
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const [current, setCurrent] = useState('login');
 
   const onClick: MenuProps['onClick'] = (e) => {
@@ -69,7 +60,7 @@ const AppContent = () => {
   };
 
   if (loading) {
-    return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
+    return <Flex justify="center" align="center" style={{ height: '100vh', width: '100vw' }}><Spin size="large" /></Flex>;
   }
 
   return (

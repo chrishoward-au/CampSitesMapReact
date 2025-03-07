@@ -1,21 +1,21 @@
 
-import Map, { useMap, Marker, Popup, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl } from 'react-map-gl/mapbox';
+import Map, { Marker, Popup, NavigationControl, GeolocateControl, ScaleControl } from 'react-map-gl/mapbox';
 import type { MapMouseEvent } from 'mapbox-gl';
 import * as React from 'react';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapContext } from '../contexts/MapContext';
 import { useAuth } from '../contexts/AuthContext';
-import type { MapPoint, MapViewState } from '../types';
+import type { MapPoint } from '../types';
 import type { MapRef } from 'react-map-gl/mapbox';
-import { AddMapPointForm } from './AddMapPointForm';
+// import { AddMapPointForm } from './AddMapPointForm';
 import { LoginPrompt } from './LoginPrompt';
-import { MAP_STYLES, DEFAULT_STYLE, CONTROL_POSITIONS, MAP_CONFIG, POINT_TYPE_COLORS } from '../constants';
-import { MapboxStyleSwitcherControl } from "mapbox-gl-style-switcher";
+import { DEFAULT_STYLE, CONTROL_POSITIONS, MAP_CONFIG, POINT_TYPE_COLORS } from '../constants';
+// import { MapboxStyleSwitcherControl } from "mapbox-gl-style-switcher";
 import { LayerSwitcher } from './LayerSwitcher';
 import "mapbox-gl-style-switcher/styles.css";
-import { mapPointsService } from '../services/mapPointsService';
-import { Button, Modal, message } from 'antd';
+// import { mapPointsService } from '../services/mapPointsService';
+import { Button, Modal, message, Flex, Spin } from 'antd';
 
 export const MapView = () => {
   const {
@@ -24,17 +24,17 @@ export const MapView = () => {
     viewState,
     setViewState,
     selectedPoint,
-    setSelectedPoint
+    // setSelectedPoint
   } = useMapContext();
   
   const { user, showLoginModal } = useAuth();
   
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<MapPoint | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [clickedLocation, setClickedLocation] = useState<{latitude: number, longitude: number} | null>(null);
-  const [currentMapStyle, setCurrentMapStyle] = useState<string>(DEFAULT_STYLE);
-  const popoverButtonRef = useRef<HTMLButtonElement>(null);
+  // const [showAddForm, setShowAddForm] = useState(false);
+  // const [clickedLocation, setClickedLocation] = useState<{latitude: number, longitude: number} | null>(null);
+  const [currentMapStyle] = useState<string>(DEFAULT_STYLE);
+  // const popoverButtonRef = useRef<HTMLButtonElement>(null);
 
   // When selectedPoint changes, update the map view to center on it
   React.useEffect(() => {
@@ -59,10 +59,10 @@ export const MapView = () => {
     
     // Only trigger on cmd/ctrl + click
     if (event.originalEvent.metaKey || event.originalEvent.ctrlKey) {
-      setClickedLocation({
-        latitude: event.lngLat.lat,
-        longitude: event.lngLat.lng
-      });
+      // setClickedLocation({
+      //   latitude: event.lngLat.lat,
+      //   longitude: event.lngLat.lng
+      // });
       
       // Trigger the popover
 //      if (popoverButtonRef.current) {
@@ -88,22 +88,20 @@ export const MapView = () => {
   // If user is not authenticated, show a prompt to login
   if (!user) {
     return (
-      <div className="relative w-full h-full flex flex-col">
-        <div className="flex-1 flex items-center justify-center">
+      <Flex gap="middle" wrap>
+        <Flex className="flex-1 flex items-center justify-center">
           <LoginPrompt />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     );
   }
 
   return (
     <div id="map-container">
       {loading ? (
-        <div className="loading-overlay">
-          <div className="animate-spin inline-block size-6 border-3 border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
+        <Flex className="loading-overlay">
+          <Spin size="large" />
+        </Flex>
       ) : null}
       
       <Map

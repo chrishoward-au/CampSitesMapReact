@@ -1,6 +1,6 @@
 import { supabase } from '../utils/supabase';
 import type { UserSettings } from '../types';
-import type { Database } from '../types/supabase';
+// import type { Database } from '../types/supabase';
 
 // Default settings if none are found
 const DEFAULT_SETTINGS: Omit<UserSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {

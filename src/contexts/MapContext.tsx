@@ -29,7 +29,8 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<MapPoint | null>(null);
-  const [needsAuthentication, setNeedsAuthentication] = useState<boolean>(false);
+  // State to track if authentication is needed - commented out as it's not currently used
+  // const [needsAuthentication, setNeedsAuthentication] = useState<boolean>(false);
   
   // Initialize with default view state
   const [viewState, setViewState] = useState<MapViewState>({
@@ -45,7 +46,7 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      setNeedsAuthentication(false);
+      // setNeedsAuthentication(false);
       
       // Load user settings
       try {
@@ -62,7 +63,7 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (err?.message?.includes('authentication') || 
             err?.code === '42501' || // RLS policy violation
             err?.code === '401') {
-          setNeedsAuthentication(true);
+          // setNeedsAuthentication(true);
           showLoginModal();
         }
         // Continue with defaults
@@ -77,7 +78,7 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (err?.message?.includes('authentication') || 
             err?.code === '42501' || // RLS policy violation
             err?.code === '401') {
-          setNeedsAuthentication(true);
+          // setNeedsAuthentication(true);
           showLoginModal();
         }
         throw err;
@@ -105,7 +106,7 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (err?.message?.includes('authentication') || 
           err?.code === '42501' || // RLS policy violation
           err?.code === '401') {
-        setNeedsAuthentication(true);
+        // setNeedsAuthentication(true);
         showLoginModal();
       }
       setError(err instanceof Error ? err : new Error(String(err)));

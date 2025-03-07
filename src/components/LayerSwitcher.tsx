@@ -31,13 +31,14 @@ export const LayerSwitcher = ({ position = 'bottom-right' as ControlPosition }: 
         ];
         
         const styleSwitcher = new MapboxStyleSwitcherControl(styles, DEFAULT_STYLE);
-        map.addControl(styleSwitcher, position);
+        // Type assertion to fix TypeScript error
+        map.addControl(styleSwitcher as unknown as mapboxgl.IControl, position);
         
         // For cleanup when component unmounts
         return () => {
           if (map && styleSwitcher) {
             try {
-              map.removeControl(styleSwitcher);
+              map.removeControl(styleSwitcher as unknown as mapboxgl.IControl);
             } catch (e) {
               console.warn('Error removing style switcher control:', e);
             }
