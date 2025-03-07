@@ -5,15 +5,17 @@ import * as React from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapContext } from '../contexts/MapContext';
+import { useAuth } from '../contexts/AuthContext';
 import type { MapPoint, MapViewState } from '../types';
 import type { MapRef } from 'react-map-gl/mapbox';
 import { AddMapPointForm } from './AddMapPointForm';
+import { LoginPrompt } from './LoginPrompt';
 import { MAP_STYLES, DEFAULT_STYLE, CONTROL_POSITIONS, MAP_CONFIG, POINT_TYPE_COLORS } from '../constants';
 import { MapboxStyleSwitcherControl } from "mapbox-gl-style-switcher";
 import { LayerSwitcher } from './LayerSwitcher';
 import "mapbox-gl-style-switcher/styles.css";
 import { mapPointsService } from '../services/mapPointsService';
-import { Button, Modal } from 'antd';
+import { Button, Modal, message } from 'antd';
 
 export const MapView = () => {
   const {
@@ -24,6 +26,8 @@ export const MapView = () => {
     selectedPoint,
     setSelectedPoint
   } = useMapContext();
+  
+  const { user, showLoginModal } = useAuth();
   
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<MapPoint | null>(null);
@@ -46,6 +50,13 @@ export const MapView = () => {
   
   // Handle map click events
   const handleMapClick = (event: MapMouseEvent) => {
+    // Check if user is authenticated before allowing to add points
+    if (!user) {
+      message.warning('Please sign in to add map points');
+      showLoginModal();
+      return;
+    }
+    
     // Only trigger on cmd/ctrl + click
     if (event.originalEvent.metaKey || event.originalEvent.ctrlKey) {
       setClickedLocation({
@@ -74,6 +85,17 @@ export const MapView = () => {
   }, []);
   
   
+  // If user is not authenticated, show a prompt to login
+  if (!user) {
+    return (
+      <div className="relative w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center">
+          <LoginPrompt />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="map-container">
       {loading ? (
@@ -84,8 +106,6 @@ export const MapView = () => {
         </div>
       ) : null}
       
-
-            
       <Map
         ref={mapRef}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string}
@@ -144,7 +164,13 @@ export const MapView = () => {
                   </span>
                 ))}
               </div>
-              <Button type="primary" >Start route</Button><Button type="primary" >End route</Button>
+              <div className="flex gap-2 mt-2">
+                <Button type="primary" size="small">Start route</Button>
+                <Button type="primary" size="small">End route</Button>
+                {user && (
+                  <Button type="default" size="small" danger>Delete</Button>
+                )}
+              </div>
             </div>
           </Popup>
         )}

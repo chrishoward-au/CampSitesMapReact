@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { MapPoint, MapViewState } from '../types';
 import { mapPointsService } from '../services/mapPointsService';
 import { settingsService } from '../services/settingsService';
+import { useAuth } from './AuthContext';
 
 interface MapContextType {
   mapPoints: MapPoint[];
@@ -19,14 +20,16 @@ interface MapContextType {
 
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
-// Mock user ID - in a real app, this would come from authentication
-const MOCK_USER_ID = 'de2e543b-0581-491c-9434-7d65c00dfea9';
+// Default user ID if no authenticated user is present
+const DEFAULT_USER_ID = 'de2e543b-0581-491c-9434-7d65c00dfea9';
 
 export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, showLoginModal } = useAuth();
   const [mapPoints, setMapPoints] = useState<MapPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<MapPoint | null>(null);
+  const [needsAuthentication, setNeedsAuthentication] = useState<boolean>(false);
   
   // Initialize with default view state
   const [viewState, setViewState] = useState<MapViewState>({
@@ -35,26 +38,50 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     zoom: 8
   });
   
+  const getUserId = () => {
+    return user?.id || DEFAULT_USER_ID;
+  };
+  
   const loadInitialData = async () => {
     try {
       setLoading(true);
+      setNeedsAuthentication(false);
       
       // Load user settings
       try {
-        const settings = await settingsService.getUserSettings(MOCK_USER_ID);
+        const settings = await settingsService.getUserSettings(getUserId());
         setViewState({
           longitude: settings.default_longitude,
           latitude: settings.default_latitude,
           zoom: settings.default_zoom
         });
-      } catch (err) {
+      } catch (err: any) {
         console.warn('Could not load user settings, using defaults:', err);
+        
+        // If we get an authentication error, prompt for login
+        if (err?.message?.includes('authentication') || 
+            err?.code === '42501' || // RLS policy violation
+            err?.code === '401') {
+          setNeedsAuthentication(true);
+          showLoginModal();
+        }
         // Continue with defaults
       }
       
       // Load map points
-      const points = await mapPointsService.getMapPoints();
-      setMapPoints(points);
+      try {
+        const points = await mapPointsService.getMapPoints();
+        setMapPoints(points);
+      } catch (err: any) {
+        // If we get an authentication error, prompt for login
+        if (err?.message?.includes('authentication') || 
+            err?.code === '42501' || // RLS policy violation
+            err?.code === '401') {
+          setNeedsAuthentication(true);
+          showLoginModal();
+        }
+        throw err;
+      }
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       console.error('Error loading map data:', err);
@@ -63,16 +90,24 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
   
+  // Load data when user changes
   useEffect(() => {
     loadInitialData();
-  }, []);
+  }, [user]);
   
   const refreshMapPoints = async () => {
     try {
       setLoading(true);
       const points = await mapPointsService.getMapPoints();
       setMapPoints(points);
-    } catch (err) {
+    } catch (err: any) {
+      // If we get an authentication error, prompt for login
+      if (err?.message?.includes('authentication') || 
+          err?.code === '42501' || // RLS policy violation
+          err?.code === '401') {
+        setNeedsAuthentication(true);
+        showLoginModal();
+      }
       setError(err instanceof Error ? err : new Error(String(err)));
       console.error('Error refreshing map points:', err);
     } finally {
