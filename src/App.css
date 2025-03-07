@@ -42,7 +42,7 @@
 }
 
 #map-container {
-  position: absolute;
+  xposition: absolute;
   top: 0;
   bottom: 0;
   left: 0;
