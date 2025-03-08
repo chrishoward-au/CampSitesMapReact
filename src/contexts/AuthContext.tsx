@@ -9,7 +9,6 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   showLoginModal: () => void;
-  showSettingsModal: () => void;
   isLoginModalVisible: boolean;
 }
 
