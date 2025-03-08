@@ -7,7 +7,7 @@ import { Content } from 'antd/es/layout/layout';
 import { Flex, Layout, Spin } from 'antd';
 import { ButtonGroup } from './components/ButtonGroup';
 import { Button } from 'antd';
-import { UserOutlined, SettingFilled, SunFilled, MoonFilled } from '@ant-design/icons';
+import { AimOutlined, UserOutlined, SettingOutlined, SunFilled, MoonFilled, UnorderedListOutlined, GlobalOutlined, CloudOutlined } from '@ant-design/icons';
 import { useTheme } from './contexts/ThemeContext';
 import { SettingsModal } from './components/SettingsModal';
 
@@ -41,7 +41,7 @@ const showSettingsModal = () => {
 
 // Wrapper component that conditionally renders content based on auth state
 const AppContent = () => {
-  const { loading, showLoginModal } = useAuth();
+  const { loading, showLoginModal, isAuthenticated } = useAuth();
 
   const { isDark, toggleTheme } = useTheme();
   const ThemeIcon = isDark ? <MoonFilled /> : <SunFilled />;
@@ -59,9 +59,13 @@ const AppContent = () => {
             <Footer style={footerStyle}>
               <Flex gap="middle" wrap>
                 <ButtonGroup>
-                  <Button type="text" icon={<UserOutlined />} onClick={showLoginModal} />
-                  <Button type="text" icon={<SettingFilled />} onClick={showSettingsModal} />
-                  <Button type="text" onClick={toggleTheme} icon={ThemeIcon} />
+                  <Button type="text" icon={<UserOutlined />} onClick={showLoginModal} title="Login" />
+                  <Button type="text" icon={<AimOutlined />} title="Go to location" />
+                  <Button type="text" icon={<UnorderedListOutlined />} title="Show Sites List" />
+                  <Button type="text" icon={<GlobalOutlined />} title="Toggle Map Layers" />
+                  <Button type="text" icon={<CloudOutlined />} title="Toggle Weather Layer" />
+                  <Button type="text" disabled={!isAuthenticated} icon={<SettingOutlined />} onClick={showSettingsModal} title="Settings" />
+                  <Button type="text" onClick={toggleTheme} icon={ThemeIcon} title="Toggle Theme" />
                 </ButtonGroup>
               </Flex>
 

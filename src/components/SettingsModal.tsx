@@ -3,10 +3,9 @@ import { Modal, Button, Flex } from 'antd';
 import { useTheme } from '../contexts/ThemeContext';
 
 export const SettingsModal: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible, show, onClose, showSettingsModal] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
-  const showModal = () => setIsVisible(true);
   const handleClose = () => setIsVisible(false);
 
   return (

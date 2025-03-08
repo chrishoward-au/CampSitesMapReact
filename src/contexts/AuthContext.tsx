@@ -5,6 +5,7 @@ import { supabase } from '../utils/supabase';
 interface AuthContextType {
   user: any | null;
   loading: boolean;
+  isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
   const [isLoginView, setIsLoginView] = useState(true);
@@ -28,8 +30,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLoading(true);
         const { data } = await supabase.auth.getUser();
         setUser(data?.user || null);
+        setIsAuthenticated(!!data?.user);
       } catch (error) {
         console.error('Error checking authentication:', error);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -41,6 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_, session) => {
         setUser(session?.user || null);
+        setIsAuthenticated(!!session?.user);
       }
     );
 
@@ -77,11 +82,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       setUser(data.user);
+      setIsAuthenticated(true);
       setIsLoginModalVisible(false);
       message.success('Successfully signed in!');
     } catch (error: any) {
       console.error('Sign in error:', error);
       message.error(error.message || 'Failed to sign in');
+      setIsAuthenticated(false);
       throw error;
     }
   };
@@ -109,12 +116,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (error) {
         console.error('Signup error:', error);
+        setIsAuthenticated(false);
         throw error;
       }
 
       if (!data.user) {
         console.error('No user returned from signup');
         message.error('Failed to create user account. Please try again.');
+        setIsAuthenticated(false);
         return;
       }
 
@@ -124,6 +133,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(data.user);
         setIsLoginModalVisible(false);
         message.success('Account created and signed in successfully!');
+        setIsAuthenticated(true);
         return;
       }
       
@@ -311,7 +321,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signUp,
         signOut,
         showLoginModal,
-        showSettingsModal,
+        isAuthenticated,
         isLoginModalVisible
       }}
     >
