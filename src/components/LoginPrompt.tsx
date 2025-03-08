@@ -8,6 +8,7 @@ export const LoginPrompt: React.FC = () => {
   const { showLoginModal } = useAuth();
 
   return (
+    
     <Flex justify="center" align="center" style={{ height: 'calc(100vh * 0.5)', width: '100vw' }}>
       <Card title="Welcome to CampSites Map" style={{ width: 300 }}>
       <Space direction="vertical" align="center" size="large">
