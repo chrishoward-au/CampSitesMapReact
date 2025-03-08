@@ -6,7 +6,7 @@ import './App.css';
 import { Content } from 'antd/es/layout/layout';
 import { Flex, Layout, Menu, Spin, ConfigProvider } from 'antd';
 import type { MenuProps } from 'antd';
-import { UserOutlined, SettingOutlined, PlusOutlined, SunOutlined } from '@ant-design/icons';
+import { UserOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import  theme  from './theme'
 
