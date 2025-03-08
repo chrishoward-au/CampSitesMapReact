@@ -1,6 +1,7 @@
 // ThemeContext.tsx
 import React, { createContext, useState, useContext } from 'react';
-import { theme, ConfigProvider } from 'antd';
+import { ConfigProvider } from 'antd';
+import { theme } from 'antd';
 
 interface ThemeContextType {
   isDark: boolean;
@@ -15,11 +16,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsDark((prev) => !prev);
       };
     
-
   return (
-    <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-      {children}
-    </ConfigProvider>
+    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      <ConfigProvider
+        theme={{
+          algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </ThemeContext.Provider>
   );
 };
 

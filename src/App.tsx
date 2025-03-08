@@ -5,7 +5,6 @@ import { useAuth } from './contexts/AuthContext';
 import './App.css';
 import { Content } from 'antd/es/layout/layout';
 import { Flex, Layout, Spin } from 'antd';
-import { ThemeProvider } from './contexts/ThemeContext';
 import { ButtonGroup } from './components/ButtonGroup';
 import { Button } from 'antd';
 import { UserOutlined, SettingFilled, SunFilled, MoonFilled } from '@ant-design/icons';
@@ -44,19 +43,15 @@ const showSettingsModal = () => {
 const AppContent = () => {
   const { loading, showLoginModal } = useAuth();
 
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const ThemeIcon = isDark ? <MoonFilled /> : <SunFilled />;
 
   if (loading) {
     return <Flex justify="center" align="center" style={{ height: '100vh', width: '100vw' }}><Spin size="large" /></Flex>;
   }
 
-  const toggleTheme = () => {
-    toggleTheme();
-  };
 
   return (
-    <ThemeProvider>
       <MapProvider>
         <Flex gap="middle" wrap>
           <Layout style={layoutStyle}>
@@ -74,7 +69,6 @@ const AppContent = () => {
           </Layout>
         </Flex>
       </MapProvider >
-    </ThemeProvider>
   );
 };
 
